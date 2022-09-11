@@ -3,6 +3,7 @@ import logging
 import requests
 
 from aiogram import Bot, Dispatcher, types
+
 from config import settings
 from coins import all_coins
 
@@ -60,6 +61,24 @@ async def currencies(message: types.Message):
 
     for coin in all_coins:
         ch_coin = all_coins[coin][0]
+        await message.answer(ch_coin, reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Show exchange rate")
+async def currencies(message: types.Message):
+
+    buttons = [
+
+        "Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    for coin in all_coins:
+        ch_coin = all_coins[coin][1]
+        response = requests.get(ch_coin).json()
         await message.answer(ch_coin, reply_markup=keyboard)
 
 
