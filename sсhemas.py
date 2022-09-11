@@ -1,8 +1,15 @@
 from pydantic import BaseModel
-from coins import all_coins
 
 
-class MonitoringCoin(BaseModel):
-    name: str
-    categories: list
-    links: dict
+class CurrentPrice(BaseModel):
+    usd: float
+    eur: float
+    rub: float
+
+
+class MarketData(BaseModel):
+    current_price: CurrentPrice
+
+
+class Model(BaseModel):
+    market_data: MarketData
