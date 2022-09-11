@@ -1,7 +1,7 @@
 coins = {
-    'BTC': 'https://api.coingecko.com/api/v3/coins/bitcoin',
-    'ETH': 'https://api.coingecko.com/api/v3/coins/ethereum',
-    'TUSD': 'https://api.coingecko.com/api/v3/coins/true-usd',
+    'BTC': ['BTC - Bitcoin', 'https://api.coingecko.com/api/v3/coins/bitcoin'],
+    'ETH': ['ETH - Ethereum', 'https://api.coingecko.com/api/v3/coins/ethereum'],
+    'TUSD': ['TUSD - TrueUSD', 'https://api.coingecko.com/api/v3/coins/true-usd'],
 
 
 }
