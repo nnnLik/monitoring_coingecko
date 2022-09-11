@@ -4,11 +4,14 @@ import requests
 
 from aiogram import Bot, Dispatcher, types
 from config import settings
+from coins import all_coins
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=settings['TOKEN'])
 
 dp = Dispatcher(bot=bot)
+
+basic_message = 'Choose the functionality you are interested in'
 
 
 @dp.message_handler(commands=['start'])
@@ -39,27 +42,30 @@ async def monitoring(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer(' ',
+    await message.answer(basic_message,
                          reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "View monitored currencies")
 async def currencies(message: types.Message):
+
     buttons = [
+
         "Back"
+
     ]
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    monitored_currencies = requests.get(f'https://api.coingecko.com/api/v3//coins/list').json()
-
-    await message.answer(' ',
-                         reply_markup=keyboard)
+    for coin in all_coins:
+        ch_coin = all_coins[coin][0]
+        await message.answer(ch_coin, reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Back")
 async def back(message: types.Message):
+
     buttons = [
 
         "Monitoring",
@@ -70,7 +76,7 @@ async def back(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer('Choose the functionality you are interested in', reply_markup=keyboard)
+    await message.answer(basic_message, reply_markup=keyboard)
 
 
 async def main():
