@@ -2,5 +2,7 @@ from pydantic import BaseModel
 from coins import all_coins
 
 
-class MonitoringCoin:
-    usd: float
+class MonitoringCoin(BaseModel):
+    name: str
+    categories: list
+    links: dict
