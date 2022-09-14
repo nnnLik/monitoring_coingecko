@@ -1,14 +1,16 @@
-import asyncio
-import logging
 import requests
 
-import json
+import asyncio
 
 from aiogram import Bot, Dispatcher, types
+from aiogram.utils import executor
+import logging
 
 from config import settings
 from coins import all_coins
-from sсhemas import Model, MarketData, CurrentPrice
+
+from sсhemas import Model
+
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=settings['TOKEN'])
@@ -78,7 +80,6 @@ async def currencies(message: types.Message):
     keyboard.add(*buttons)
 
     for coin in all_coins:
-
         ch_coin = all_coins[coin][1]
         response = requests.get(ch_coin).json()
 
@@ -91,7 +92,7 @@ async def currencies(message: types.Message):
         eur_price = list_of_prices[1][4:]
         rub_price = list_of_prices[2][4:]
 
-        Coin_Price = f'''
+        coin_price = f'''
         
 {all_coins[coin][0]} / USD --> {usd_price}
 {all_coins[coin][0]} / EUR --> {eur_price}
@@ -99,7 +100,7 @@ async def currencies(message: types.Message):
         
                     '''
 
-        await message.answer(Coin_Price, reply_markup=keyboard)
+        await message.answer(coin_price, reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Back")
