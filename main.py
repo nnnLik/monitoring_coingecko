@@ -6,21 +6,23 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
 import logging
 
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
 from config import settings
 from coins import all_coins
 
 from sсhemas import Model
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=settings['TOKEN'])
 
-dp = Dispatcher(bot=bot)
+bot = Bot(token=settings['TOKEN'])
+dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 basic_message = 'Choose the functionality you are interested in'
 
 DELAY = 5
 
-chat_id = 475835202
+chat_id = None
 
 
 async def update_price():
@@ -33,7 +35,10 @@ def repeat(coro, loop):
 
 
 @dp.message_handler(commands=['start'])
-async def main_menu(message: types.Message):
+async def main_menu(message: types.Message) -> None:
+
+    global chat_id
+
     buttons = [
 
         "Monitoring",
@@ -43,6 +48,8 @@ async def main_menu(message: types.Message):
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
+
+    chat_id = message.from_user.id
 
     await message.answer('Choose the functionality you are interested in', reply_markup=keyboard)
 
@@ -114,6 +121,20 @@ async def currencies(message: types.Message):
                     '''
 
         await message.answer(coin_price, reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "Change notification time")
+async def currencies(message: types.Message):
+    buttons = [
+
+        "Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer('Enter the time after which you will receive notifications in minutes', reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Back")
