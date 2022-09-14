@@ -11,13 +11,25 @@ from coins import all_coins
 
 from sсhemas import Model
 
-
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=settings['TOKEN'])
 
 dp = Dispatcher(bot=bot)
 
 basic_message = 'Choose the functionality you are interested in'
+
+DELAY = 5
+
+chat_id = 475835202
+
+
+async def update_price():
+    await dp.bot.send_message(chat_id, '\nTimer message')
+
+
+def repeat(coro, loop):
+    asyncio.ensure_future(coro(), loop=loop)
+    loop.call_later(DELAY, repeat, coro, loop)
 
 
 @dp.message_handler(commands=['start'])
@@ -41,6 +53,7 @@ async def monitoring(message: types.Message):
 
         "View monitored currencies",
         "Show exchange rate",
+        "Change notification time",
         "Back"
 
     ]
@@ -123,4 +136,7 @@ async def main():
 
 
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.call_later(DELAY, repeat, update_price, loop)
+    executor.start_polling(dp, loop=loop)
     asyncio.run(main())
