@@ -8,6 +8,8 @@ import logging
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 from config import settings
 from coins import all_coins
 
@@ -21,39 +23,42 @@ dp = Dispatcher(bot=bot, storage=MemoryStorage())
 basic_message = 'Choose the functionality you are interested in'
 
 
-# DELAY = 5
-
-# chat_id = None
-
-
-# async def update_price():
-#     await dp.bot.send_message(chat_id, '\nTimer message')
-#
-#
-# def repeat(coro, loop):
-#     asyncio.ensure_future(coro(), loop=loop)
-#     loop.call_later(DELAY, repeat, coro, loop)
-
-
 @dp.message_handler(commands=['start'])
 async def main_menu(message: types.Message) -> None:
 
     buttons = [
 
-        "Monitoring",
-        "Buy",
+        "📊 Monitoring",
+        "🏦 Wallet",
 
     ]
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    # chat_id = message.from_user.id
+    await message.answer('Choose the functionality you are interested in',
+                         reply_markup=keyboard)
 
-    await message.answer('Choose the functionality you are interested in', reply_markup=keyboard)
+
+@dp.message_handler(lambda message: message.text == "🏦 Wallet")
+async def monitoring(message: types.Message):
+
+    buttons = [
+
+        "View monitored currencies",
+        "Show exchange rate",
+        "Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == "Monitoring")
+@dp.message_handler(lambda message: message.text == "📊 Monitoring")
 async def monitoring(message: types.Message):
     buttons = [
 
@@ -84,7 +89,8 @@ async def currencies(message: types.Message):
 
     for coin in all_coins:
         ch_coin = all_coins[coin][0]
-        await message.answer(ch_coin, reply_markup=keyboard)
+        await message.answer(ch_coin,
+                             reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Show exchange rate")
@@ -119,7 +125,8 @@ async def currencies(message: types.Message):
         
                     '''
 
-        await message.answer(coin_price, reply_markup=keyboard)
+        await message.answer(coin_price,
+                             reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Change notification time")
@@ -133,22 +140,24 @@ async def currencies(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer('Enter the time after which you will receive notifications in minutes', reply_markup=keyboard)
+    await message.answer('Enter the time after which you will receive notifications in minutes',
+                         reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "Back")
 async def back(message: types.Message):
     buttons = [
 
-        "Monitoring",
-        "Buy",
+        "📊 Monitoring",
+        "🏦 Wallet",
 
     ]
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer(basic_message, reply_markup=keyboard)
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
 
 
 async def main():
@@ -156,8 +165,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    # func for notification
-    # loop = asyncio.get_event_loop()
-    # loop.call_later(DELAY, repeat, update_price, loop)
-    # executor.start_polling(dp, loop=loop)
     asyncio.run(main())
