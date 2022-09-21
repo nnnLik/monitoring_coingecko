@@ -8,8 +8,10 @@ import logging
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 from config import settings
-from coins import all_coins
+from list_of_traceable_coins import all_coins
 
 from sсhemas import Model
 
@@ -20,48 +22,28 @@ dp = Dispatcher(bot=bot, storage=MemoryStorage())
 
 basic_message = 'Choose the functionality you are interested in'
 
-DELAY = 5
+# inline keyboard buttons
 
-chat_id = None
+# "Change tracked coins" buttons
+inline_keyboard_ctc = InlineKeyboardMarkup(row_width=2)
+inline_keyboard_ctc_buttons = [InlineKeyboardButton(text='🟢 ADD', callback_data='ctc_add'),
+                               InlineKeyboardButton(text='🔴 DELETE', callback_data='ctc_delete')]
+inline_keyboard_ctc.row(*inline_keyboard_ctc_buttons)
 
-
-async def update_price():
-    await dp.bot.send_message(chat_id, '\nTimer message')
-
-
-def repeat(coro, loop):
-    asyncio.ensure_future(coro(), loop=loop)
-    loop.call_later(DELAY, repeat, coro, loop)
+# "Check price" buttons
+inline_keyboard_cp = InlineKeyboardMarkup(row_width=2)
+inline_keyboard_cp_buttons = [InlineKeyboardButton(text='USD', callback_data='cp_usd'),
+                              InlineKeyboardButton(text='EUR', callback_data='cp_eur'),
+                              InlineKeyboardButton(text='RUB', callback_data='ctc_rub')]
+inline_keyboard_cp.row(*inline_keyboard_ctc_buttons)
 
 
 @dp.message_handler(commands=['start'])
 async def main_menu(message: types.Message) -> None:
-
-    global chat_id
-
     buttons = [
 
-        "Monitoring",
-        "Buy",
-
-    ]
-
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(*buttons)
-
-    chat_id = message.from_user.id
-
-    await message.answer('Choose the functionality you are interested in', reply_markup=keyboard)
-
-
-@dp.message_handler(lambda message: message.text == "Monitoring")
-async def monitoring(message: types.Message):
-    buttons = [
-
-        "View monitored currencies",
-        "Show exchange rate",
-        "Change notification time",
-        "Back"
+        "📊 Monitoring",
+        "🏦 Wallet",
 
     ]
 
@@ -72,11 +54,47 @@ async def monitoring(message: types.Message):
                          reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == "View monitored currencies")
+# @dp.message_handler(lambda message: message.text == "🏦 Wallet")
+# async def monitoring(message: types.Message):
+#
+#     buttons = [
+#
+#         "View monitored currencies",
+#         "Show exchange rate",
+#         "Back"
+#
+#     ]
+#
+#     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#     keyboard.add(*buttons)
+#
+#     await message.answer(basic_message,
+#                          reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "📊 Monitoring")
+async def monitoring(message: types.Message):
+    buttons = [
+
+        "💱 Check price",
+        "✍🏻 Change tracked coins",
+        "📜 List of coins",
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "✍🏻 Change tracked coins")
 async def currencies(message: types.Message):
     buttons = [
 
-        "Back"
+        "🔙 Back"
 
     ]
 
@@ -85,19 +103,25 @@ async def currencies(message: types.Message):
 
     for coin in all_coins:
         ch_coin = all_coins[coin][0]
-        await message.answer(ch_coin, reply_markup=keyboard)
+        await message.answer(ch_coin,
+                             reply_markup=keyboard)
+
+    await message.reply('What to change?',
+                        reply_markup=inline_keyboard_ctc)
 
 
-@dp.message_handler(lambda message: message.text == "Show exchange rate")
+@dp.message_handler(lambda message: message.text == "💱 Check price")
 async def currencies(message: types.Message):
     buttons = [
 
-        "Back"
+        "🔙 Back"
 
     ]
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
+
+    await message.answer()
 
     for coin in all_coins:
         ch_coin = all_coins[coin][1]
@@ -120,36 +144,33 @@ async def currencies(message: types.Message):
         
                     '''
 
-        await message.answer(coin_price, reply_markup=keyboard)
+        await message.answer(coin_price,
+                             reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == "Change notification time")
-async def currencies(message: types.Message):
-    buttons = [
-
-        "Back"
-
-    ]
-
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(*buttons)
-
-    await message.answer('Enter the time after which you will receive notifications in minutes', reply_markup=keyboard)
-
-
-@dp.message_handler(lambda message: message.text == "Back")
+@dp.message_handler(lambda message: message.text == "🔙 Back")
 async def back(message: types.Message):
     buttons = [
 
-        "Monitoring",
-        "Buy",
+        "📊 Monitoring",
+        "🏦 Wallet",
 
     ]
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer(basic_message, reply_markup=keyboard)
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('ctc_'))
+async def ctc_add(callback: types.CallbackQuery):
+    ctc_answer = str(callback.data.split('_')[1])
+    if ctc_answer == 'add':
+        pass
+    if ctc_answer == 'delete':
+        pass
 
 
 async def main():
@@ -157,7 +178,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.call_later(DELAY, repeat, update_price, loop)
-    executor.start_polling(dp, loop=loop)
     asyncio.run(main())
