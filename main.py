@@ -1,6 +1,5 @@
 import requests
-
-import time
+import re
 
 import asyncio
 
@@ -14,9 +13,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import settings
-from list_of_traceable_coins import all_coins
+from coins_configs import all_coins, list_of_coins
 
-from sсhemas import Model
+from sсhemas import MarketDataModel, ListOfCoinsModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -133,6 +132,24 @@ async def currencies(message: types.Message):
                          reply_markup=inline_keyboard_cp)
 
 
+@dp.message_handler(lambda message: message.text == "📜 List of coins")
+async def currencies(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    response = requests.get(list_of_coins).json()
+    all_coin_list = str(ListOfCoinsModel.parse_obj(response))
+    print(all_coin_list)
+
+    await message.answer('Q')
+
+
 @dp.message_handler(lambda message: message.text == "🔙 Back")
 async def back(message: types.Message):
     buttons = [
@@ -168,7 +185,7 @@ async def ctc_add(callback: types.CallbackQuery):
         ch_coin = all_coins[coin][1]
         response = requests.get(ch_coin).json()
 
-        coin_price = str(Model(**response))
+        coin_price = str(MarketDataModel(**response))
 
         pars_price = coin_price.split('CurrentPrice')[1].replace(" ", "").replace(")", "").replace("(", "")
         list_of_prices = pars_price.split(',')
@@ -185,18 +202,6 @@ async def ctc_add(callback: types.CallbackQuery):
 
 
     await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text=test_str_price)
-
-# В большинстве случаев целесообразно разбить этот хэндлер на несколько маленьких
-# @bot.callback_query_handler(func=lambda call: True)
-# def callback_inline(call):
-#     # Если сообщение из чата с ботом
-#     if call.message:
-#         if call.data == "test":
-#             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Пыщь")
-#     # Если сообщение из инлайн-режима
-#     elif call.inline_message_id:
-#         if call.data == "test":
-#             bot.edit_message_text(inline_message_id=call.inline_message_id, text="Бдыщь")
 
 async def main():
     await dp.start_polling(bot)
