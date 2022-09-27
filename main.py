@@ -1,4 +1,5 @@
 import requests
+import re
 
 import asyncio
 
@@ -12,9 +13,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import settings
-from list_of_traceable_coins import all_coins
+from coins_configs import all_coins, list_of_coins
 
-from sсhemas import Model
+from sсhemas import MarketDataModel, ListOfCoinsModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -131,6 +132,24 @@ async def currencies(message: types.Message):
                          reply_markup=inline_keyboard_cp)
 
 
+@dp.message_handler(lambda message: message.text == "📜 List of coins")
+async def currencies(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    response = requests.get(list_of_coins).json()
+    all_coin_list = str(ListOfCoinsModel.parse_obj(response))
+    print(all_coin_list)
+
+    await message.answer('Q')
+
+
 @dp.message_handler(lambda message: message.text == "🔙 Back")
 async def back(message: types.Message):
     buttons = [
@@ -160,24 +179,29 @@ async def ctc_add(callback: types.CallbackQuery):
 async def ctc_add(callback: types.CallbackQuery):
     cp_answer = str(callback.data.split('_')[1]).upper()
 
+    test_str_price = ''
+
     for coin in all_coins:
         ch_coin = all_coins[coin][1]
         response = requests.get(ch_coin).json()
 
-        coin_price = str(Model(**response))
+        coin_price = str(MarketDataModel(**response))
 
         pars_price = coin_price.split('CurrentPrice')[1].replace(" ", "").replace(")", "").replace("(", "")
         list_of_prices = pars_price.split(',')
 
         if cp_answer == 'USD':
             price = list_of_prices[0][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
         elif cp_answer == 'EUR':
             price = list_of_prices[1][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
         elif cp_answer == 'RUB':
             price = list_of_prices[2][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
 
-        await callback.message.answer(f'{all_coins[coin][0]} / {cp_answer} --> {price}')
 
+    await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text=test_str_price)
 
 async def main():
     await dp.start_polling(bot)
