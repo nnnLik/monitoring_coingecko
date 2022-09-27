@@ -1,3 +1,5 @@
+list_of_coins = 'https://api.coingecko.com/api/v3/coins/list'
+
 all_coins = {
 
     1: ['BTC - Bitcoin', 'https://api.coingecko.com/api/v3/coins/bitcoin'],
