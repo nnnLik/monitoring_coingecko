@@ -1,5 +1,7 @@
 import requests
 
+import time
+
 import asyncio
 
 from aiogram import Bot, Dispatcher, types
@@ -160,6 +162,8 @@ async def ctc_add(callback: types.CallbackQuery):
 async def ctc_add(callback: types.CallbackQuery):
     cp_answer = str(callback.data.split('_')[1]).upper()
 
+    test_str_price = ''
+
     for coin in all_coins:
         ch_coin = all_coins[coin][1]
         response = requests.get(ch_coin).json()
@@ -171,13 +175,28 @@ async def ctc_add(callback: types.CallbackQuery):
 
         if cp_answer == 'USD':
             price = list_of_prices[0][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
         elif cp_answer == 'EUR':
             price = list_of_prices[1][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
         elif cp_answer == 'RUB':
             price = list_of_prices[2][4:]
+            test_str_price += f'{all_coins[coin][0]} / {cp_answer} --> {price}\n'
 
-        await callback.message.answer(f'{all_coins[coin][0]} / {cp_answer} --> {price}')
 
+    await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text=test_str_price)
+
+# В большинстве случаев целесообразно разбить этот хэндлер на несколько маленьких
+# @bot.callback_query_handler(func=lambda call: True)
+# def callback_inline(call):
+#     # Если сообщение из чата с ботом
+#     if call.message:
+#         if call.data == "test":
+#             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Пыщь")
+#     # Если сообщение из инлайн-режима
+#     elif call.inline_message_id:
+#         if call.data == "test":
+#             bot.edit_message_text(inline_message_id=call.inline_message_id, text="Бдыщь")
 
 async def main():
     await dp.start_polling(bot)
