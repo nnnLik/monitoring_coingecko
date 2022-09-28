@@ -13,9 +13,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import settings
-from coins_configs import ALL_COINS
+from coins_configs import ALL_COINS, LIST_OF_COINS
 
-from sсhemas import MarketDataModel, ListOfCoinsModel
+from sсhemas import MarketDataModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -84,7 +84,7 @@ async def monitoring(message: types.Message):
     buttons = [
 
         "📈 Check price",
-        "✍🏻 Change tracked coins",
+        "✍🏻 Tracked coins",
         "📜 List of coins",
         "🔙 Back"
 
@@ -97,7 +97,7 @@ async def monitoring(message: types.Message):
                          reply_markup=keyboard)
 
 
-@dp.message_handler(lambda message: message.text == "✍🏻 Change tracked coins")
+@dp.message_handler(lambda message: message.text == "✍🏻 Tracked coins")
 async def currencies(message: types.Message):
     buttons = [
 
@@ -143,7 +143,10 @@ async def currencies(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    await message.answer('Q')
+    for coins in LIST_OF_COINS:
+        name_of_coin = ''
+        await message.answer(f'Coin Name: *{LIST_OF_COINS[coins]["name"]}*\nCoin ID: _{LIST_OF_COINS[coins]["id"]}_',
+                             parse_mode="Markdown")
 
 
 @dp.message_handler(lambda message: message.text == "🔙 Back")
