@@ -1,6 +1,4 @@
-list_of_coins = 'https://api.coingecko.com/api/v3/coins/list'
-
-all_coins = {
+ALL_COINS = {
 
     1: ['BTC - Bitcoin', 'https://api.coingecko.com/api/v3/coins/bitcoin'],
     2: ['ETH - Ethereum', 'https://api.coingecko.com/api/v3/coins/ethereum'],
@@ -8,3 +6,4 @@ all_coins = {
 
 
 }
+
