@@ -108,13 +108,19 @@ async def currencies(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
+    await message.answer(
+        '👋 Here you see information about the currently tracked coins, the price of which you can see in the *📈 Check price* tab.',
+        parse_mode="Markdown")
+
     for coin in ALL_COINS:
         ch_coin = ALL_COINS[coin][0]
         await message.answer(ch_coin,
                              reply_markup=keyboard)
 
-    await message.reply('What to change?',
-                        reply_markup=inline_keyboard_ctc)
+    await message.answer(
+        'You can add a coin you are interested in by clicking *🟢 ADD*, or you can remove it by clicking *🔴 DELETE*.',
+        parse_mode="Markdown",
+        reply_markup=inline_keyboard_ctc)
 
 
 @dp.message_handler(lambda message: message.text == "📈 Check price")
@@ -191,15 +197,18 @@ async def ctc_add(callback: types.CallbackQuery):
 
         if cp_answer == 'USD':
             price = list_of_prices[0][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} ＄\n'
         elif cp_answer == 'EUR':
             price = list_of_prices[1][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} €\n'
         elif cp_answer == 'RUB':
             price = list_of_prices[2][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} ₽\n'
 
-    await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text=test_str_price)
+    await bot.edit_message_text(chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id,
+                                parse_mode="Markdown",
+                                text=test_str_price)
 
 
 async def main():
