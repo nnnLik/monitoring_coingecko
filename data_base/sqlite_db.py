@@ -1,6 +1,10 @@
 import sqlite3
 
 
+class NoneUserWallet(Exception):
+    pass
+
+
 def sql_start():
     global base, cur
     base = sqlite3.connect('wallet_db')
@@ -17,6 +21,6 @@ async def check_user(user_id):
     if info.fetchone() is None:
         cur.execute('INSERT INTO wallet VALUES (?, ?)', (user_id, 1000))
     else:
-        raise ValueError
+        raise NoneUserWallet
 
 
