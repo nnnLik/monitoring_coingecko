@@ -2,3 +2,4 @@ venv/
 config.py
 wallet_db
 wallet_db-journal
+__pycache__
