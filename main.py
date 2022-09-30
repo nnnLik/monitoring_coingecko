@@ -1,5 +1,4 @@
 import requests
-import re
 
 import asyncio
 
@@ -16,6 +15,9 @@ from config import settings
 from coins_configs import ALL_COINS, LIST_OF_COINS
 
 from sсhemas import MarketDataModel
+
+from data_base import sqlite_db
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -212,6 +214,7 @@ async def ctc_add(callback: types.CallbackQuery):
 
 
 async def main():
+    sqlite_db.sql_start()
     await dp.start_polling(bot)
 
 
