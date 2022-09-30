@@ -1,5 +1,4 @@
 import requests
-import re
 
 import asyncio
 
@@ -16,6 +15,9 @@ from config import settings
 from coins_configs import ALL_COINS, LIST_OF_COINS
 
 from sсhemas import MarketDataModel
+
+from data_base import sqlite_db
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,7 +52,7 @@ async def main_menu(message: types.Message) -> None:
     buttons = [
 
         "📊 Monitoring",
-        "🏦 Wallet",
+        "🏛 Wallet",
 
     ]
 
@@ -61,22 +63,62 @@ async def main_menu(message: types.Message) -> None:
                          reply_markup=keyboard)
 
 
-# @dp.message_handler(lambda message: message.text == "🏦 Wallet")
-# async def monitoring(message: types.Message):
-#
-#     buttons = [
-#
-#         "View monitored currencies",
-#         "Show exchange rate",
-#         "Back"
-#
-#     ]
-#
-#     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     keyboard.add(*buttons)
-#
-#     await message.answer(basic_message,
-#                          reply_markup=keyboard)
+@dp.message_handler(lambda message: message.text == "🏛 Wallet")
+async def monitoring(message: types.Message):
+    user_id = message.from_user.id
+
+    try:
+        await sqlite_db.check_user(user_id)
+
+    except:
+        await message.answer(f'User {user_id} already exists')
+
+    else:
+        await message.answer(f'A wallet was created for the user ({user_id})')
+
+    buttons = [
+
+        "💳 Check the balance",
+        "🛍 Buy / Sell",
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "💳 Check the balance")
+async def monitoring(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "🛍 Buy / Sell")
+async def monitoring(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "📊 Monitoring")
@@ -108,13 +150,19 @@ async def currencies(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
+    await message.answer(
+        '👋 Here you see information about the currently tracked coins, the price of which you can see in the *📈 Check price* tab.',
+        parse_mode="Markdown")
+
     for coin in ALL_COINS:
         ch_coin = ALL_COINS[coin][0]
         await message.answer(ch_coin,
                              reply_markup=keyboard)
 
-    await message.reply('What to change?',
-                        reply_markup=inline_keyboard_ctc)
+    await message.answer(
+        'You can add a coin you are interested in by clicking *🟢 ADD*, or you can remove it by clicking *🔴 DELETE*.',
+        parse_mode="Markdown",
+        reply_markup=inline_keyboard_ctc)
 
 
 @dp.message_handler(lambda message: message.text == "📈 Check price")
@@ -144,7 +192,6 @@ async def currencies(message: types.Message):
     keyboard.add(*buttons)
 
     for coins in LIST_OF_COINS:
-        name_of_coin = ''
         await message.answer(f'Coin Name: *{LIST_OF_COINS[coins]["name"]}*\nCoin ID: _{LIST_OF_COINS[coins]["id"]}_',
                              parse_mode="Markdown")
 
@@ -154,7 +201,7 @@ async def back(message: types.Message):
     buttons = [
 
         "📊 Monitoring",
-        "🏦 Wallet",
+        "🏛 Wallet",
 
     ]
 
@@ -191,18 +238,22 @@ async def ctc_add(callback: types.CallbackQuery):
 
         if cp_answer == 'USD':
             price = list_of_prices[0][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} ＄\n'
         elif cp_answer == 'EUR':
             price = list_of_prices[1][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} €\n'
         elif cp_answer == 'RUB':
             price = list_of_prices[2][4:]
-            test_str_price += f'{ALL_COINS[coin][0]} / {cp_answer} --> {price}\n'
+            test_str_price += f'*{ALL_COINS[coin][0]}* --> {price} ₽\n'
 
-    await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=callback.message.message_id, text=test_str_price)
+    await bot.edit_message_text(chat_id=callback.message.chat.id,
+                                message_id=callback.message.message_id,
+                                parse_mode="Markdown",
+                                text=test_str_price)
 
 
 async def main():
+    sqlite_db.sql_start()
     await dp.start_polling(bot)
 
 
