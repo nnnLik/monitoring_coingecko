@@ -152,7 +152,6 @@ async def currencies(message: types.Message):
     keyboard.add(*buttons)
 
     for coins in LIST_OF_COINS:
-        name_of_coin = ''
         await message.answer(f'Coin Name: *{LIST_OF_COINS[coins]["name"]}*\nCoin ID: _{LIST_OF_COINS[coins]["id"]}_',
                              parse_mode="Markdown")
 
