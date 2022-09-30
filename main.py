@@ -52,7 +52,7 @@ async def main_menu(message: types.Message) -> None:
     buttons = [
 
         "📊 Monitoring",
-        "🏦 Wallet",
+        "🏛 Wallet",
 
     ]
 
@@ -63,22 +63,62 @@ async def main_menu(message: types.Message) -> None:
                          reply_markup=keyboard)
 
 
-# @dp.message_handler(lambda message: message.text == "🏦 Wallet")
-# async def monitoring(message: types.Message):
-#
-#     buttons = [
-#
-#         "View monitored currencies",
-#         "Show exchange rate",
-#         "Back"
-#
-#     ]
-#
-#     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#     keyboard.add(*buttons)
-#
-#     await message.answer(basic_message,
-#                          reply_markup=keyboard)
+@dp.message_handler(lambda message: message.text == "🏛 Wallet")
+async def monitoring(message: types.Message):
+    user_id = message.from_user.id
+
+    try:
+        await sqlite_db.check_user(user_id)
+
+    except:
+        await message.answer(f'User {user_id} already exists')
+
+    else:
+        await message.answer(f'A wallet was created for the user ({user_id})')
+
+    buttons = [
+
+        "💳 Check the balance",
+        "🛍 Buy / Sell",
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "💳 Check the balance")
+async def monitoring(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
+
+
+@dp.message_handler(lambda message: message.text == "🛍 Buy / Sell")
+async def monitoring(message: types.Message):
+    buttons = [
+
+        "🔙 Back"
+
+    ]
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(*buttons)
+
+    await message.answer(basic_message,
+                         reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "📊 Monitoring")
@@ -161,7 +201,7 @@ async def back(message: types.Message):
     buttons = [
 
         "📊 Monitoring",
-        "🏦 Wallet",
+        "🏛 Wallet",
 
     ]
 
