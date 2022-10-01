@@ -2,15 +2,10 @@ import requests
 
 import asyncio
 
-from aiogram import Bot, Dispatcher, types
+from aiogram import (Bot, Dispatcher, types, )
 import logging
 
-from aiogram.dispatcher.filters.state import State, StatesGroup
-
-from config import settings
-from coins_configs import ALL_COINS, LIST_OF_COINS
-
-
+from aiogram.dispatcher.filters.state import (State, StatesGroup, )
 
 from keyboards.inline_change_coins import inline_keyboard_CTC
 from keyboards.inline_check_price import inline_keyboard_CP
@@ -18,6 +13,12 @@ from keyboards.inline_create_wallet import inline_keyboard_CW
 
 from data_base import sqlite_db
 from data_base.sqlite_db import NoneUserWallet
+
+from config import settings
+from coins_configs import (ALL_COINS, LIST_OF_COINS, )
+
+from schemas.schemas_list_of_coins import ListOfCoinsModel
+from schemas.sсhemas_current_price import MarketDataModel
 
 logging.basicConfig(level=logging.INFO)
 
