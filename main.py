@@ -2,22 +2,23 @@ import requests
 
 import asyncio
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
+from aiogram import (Bot, Dispatcher, types, )
 import logging
 
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher.filters.state import (State, StatesGroup, )
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-from config import settings
-from coins_configs import ALL_COINS, LIST_OF_COINS
-
-from sсhemas import MarketDataModel
+from keyboards.inline_change_coins import inline_keyboard_CTC
+from keyboards.inline_check_price import inline_keyboard_CP
+from keyboards.inline_create_wallet import inline_keyboard_CW
 
 from data_base import sqlite_db
+from data_base.sqlite_db import NoneUserWallet
 
+from config import settings
+from coins_configs import (ALL_COINS, LIST_OF_COINS, )
+
+from schemas.schemas_list_of_coins import ListOfCoinsModel
+from schemas.sсhemas_current_price import MarketDataModel
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,22 +30,6 @@ basic_message = 'Choose the functionality you are interested in'
 
 class SelectCurrencyCP(StatesGroup):
     select_currency = State()
-
-
-# inline keyboard buttons
-
-# "Change tracked coins" buttons
-inline_keyboard_ctc = InlineKeyboardMarkup(row_width=2)
-inline_keyboard_ctc_buttons = [InlineKeyboardButton(text='🟢 ADD', callback_data='ctc_add'),
-                               InlineKeyboardButton(text='🔴 DELETE', callback_data='ctc_delete')]
-inline_keyboard_ctc.row(*inline_keyboard_ctc_buttons)
-
-# "Check price" buttons
-inline_keyboard_cp = InlineKeyboardMarkup(row_width=2)
-inline_keyboard_cp_buttons = [InlineKeyboardButton(text='＄ - USD', callback_data='cp_usd'),
-                              InlineKeyboardButton(text='€ - EUR', callback_data='cp_eur'),
-                              InlineKeyboardButton(text='₽ - RUB', callback_data='cp_rub')]
-inline_keyboard_cp.row(*inline_keyboard_cp_buttons)
 
 
 @dp.message_handler(commands=['start'])
@@ -65,30 +50,43 @@ async def main_menu(message: types.Message) -> None:
 
 @dp.message_handler(lambda message: message.text == "🏛 Wallet")
 async def monitoring(message: types.Message):
+
     user_id = message.from_user.id
 
     try:
         await sqlite_db.check_user(user_id)
 
-    except:
-        await message.answer(f'User {user_id} already exists')
+    except NoneUserWallet:
+        buttons = [
+
+            "💳 Check the balance",
+            "🛍 Buy / Sell",
+            "🔙 Back"
+
+        ]
+
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(*buttons)
+
+        await message.answer(basic_message,
+                             reply_markup=keyboard)
 
     else:
-        await message.answer(f'A wallet was created for the user ({user_id})')
+        buttons = [
 
-    buttons = [
+            "🔙 Back"
 
-        "💳 Check the balance",
-        "🛍 Buy / Sell",
-        "🔙 Back"
+        ]
 
-    ]
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(*buttons)
 
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(*buttons)
+        await message.answer("Let's start", reply_markup=keyboard)
 
-    await message.answer(basic_message,
-                         reply_markup=keyboard)
+        await message.answer(
+            'To start work you need to __*create wallet*__',
+            parse_mode="Markdown",
+            reply_markup=inline_keyboard_CW)
 
 
 @dp.message_handler(lambda message: message.text == "💳 Check the balance")
@@ -162,7 +160,7 @@ async def currencies(message: types.Message):
     await message.answer(
         'You can add a coin you are interested in by clicking *🟢 ADD*, or you can remove it by clicking *🔴 DELETE*.',
         parse_mode="Markdown",
-        reply_markup=inline_keyboard_ctc)
+        reply_markup=inline_keyboard_CTC)
 
 
 @dp.message_handler(lambda message: message.text == "📈 Check price")
@@ -177,7 +175,7 @@ async def currencies(message: types.Message):
     keyboard.add(*buttons)
 
     await message.answer('Select the currency to which you want to see the coin price',
-                         reply_markup=inline_keyboard_cp)
+                         reply_markup=inline_keyboard_CP)
 
 
 @dp.message_handler(lambda message: message.text == "📜 List of coins")
@@ -212,7 +210,22 @@ async def back(message: types.Message):
                          reply_markup=keyboard)
 
 
-@dp.callback_query_handler(lambda c: c.data and c.data.startswith('ctc_'))
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CREATE'))
+async def create_wallet(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    first_name = callback.from_user.first_name
+    wallet_address = await sqlite_db.create_wallet(user_id)
+    await bot.edit_message_text(
+        text=f'''
+        A wallet was created for the <b>{first_name}</b> and the address of this wallet <u>{wallet_address}</u>.\n
+🥳Congrats!🥳
+             ''',
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        parse_mode='html')
+
+
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CTC_'))
 async def ctc_add(callback: types.CallbackQuery):
     ctc_answer = str(callback.data.split('_')[1])
     if ctc_answer == 'add':
@@ -221,8 +234,8 @@ async def ctc_add(callback: types.CallbackQuery):
         pass
 
 
-@dp.callback_query_handler(lambda c: c.data and c.data.startswith('cp_'))
-async def ctc_add(callback: types.CallbackQuery):
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CP_'))
+async def cp_add(callback: types.CallbackQuery):
     cp_answer = str(callback.data.split('_')[1]).upper()
 
     test_str_price = ''
