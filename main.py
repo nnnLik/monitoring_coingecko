@@ -210,13 +210,19 @@ async def back(message: types.Message):
                          reply_markup=keyboard)
 
 
-# @dp.callback_query_handler(lambda command: command == 'CREATE')
-# async def ctc_add(callback: types.CallbackQuery):
-#     print('asd')
-#     user_id = callback.from_user.id
-#     await sqlite_db.create_wallet(user_id)
-#     wallet_address = await view_inf()
-#     await bot.edit_message_text(text=f'A wallet was created for the user ({user_id}) and the address of this wallet {wallet_address} .\n 🥳Congrats!🥳',)
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CREATE'))
+async def create_wallet(callback: types.CallbackQuery):
+    user_id = callback.from_user.id
+    first_name = callback.from_user.first_name
+    wallet_address = await sqlite_db.create_wallet(user_id)
+    await bot.edit_message_text(
+        text=f'''
+        A wallet was created for the <b>{first_name}</b> and the address of this wallet <u>{wallet_address}</u>.\n
+🥳Congrats!🥳
+             ''',
+        chat_id=callback.message.chat.id,
+        message_id=callback.message.message_id,
+        parse_mode='html')
 
 
 @dp.callback_query_handler(lambda command: command.data and command.data.startswith('CTC_'))
@@ -229,7 +235,7 @@ async def ctc_add(callback: types.CallbackQuery):
 
 
 @dp.callback_query_handler(lambda command: command.data and command.data.startswith('CP_'))
-async def ctc_add(callback: types.CallbackQuery):
+async def cp_add(callback: types.CallbackQuery):
     cp_answer = str(callback.data.split('_')[1]).upper()
 
     test_str_price = ''
