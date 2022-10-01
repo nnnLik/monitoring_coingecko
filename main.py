@@ -3,16 +3,14 @@ import requests
 import asyncio
 
 from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor
 import logging
 
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from config import settings
 from coins_configs import ALL_COINS, LIST_OF_COINS
 
-from sсhemas import MarketDataModel
+
 
 from keyboards.inline_change_coins import inline_keyboard_CTC
 from keyboards.inline_check_price import inline_keyboard_CP
@@ -51,6 +49,7 @@ async def main_menu(message: types.Message) -> None:
 
 @dp.message_handler(lambda message: message.text == "🏛 Wallet")
 async def monitoring(message: types.Message):
+
     user_id = message.from_user.id
 
     try:
@@ -68,7 +67,6 @@ async def monitoring(message: types.Message):
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
         keyboard.add(*buttons)
 
-        await message.answer(f'A wallet was created for the user ({user_id})')
         await message.answer(basic_message,
                              reply_markup=keyboard)
 
@@ -79,16 +77,15 @@ async def monitoring(message: types.Message):
 
         ]
 
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(*buttons)
+
+        await message.answer("Let's start", reply_markup=keyboard)
+
         await message.answer(
             'To start work you need to __*create wallet*__',
             parse_mode="Markdown",
             reply_markup=inline_keyboard_CW)
-
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        keyboard.add(*buttons)
-
-        await message.answer(f'User {user_id} already exists',
-                             reply_markup=keyboard)
 
 
 @dp.message_handler(lambda message: message.text == "💳 Check the balance")
@@ -212,7 +209,16 @@ async def back(message: types.Message):
                          reply_markup=keyboard)
 
 
-@dp.callback_query_handler(lambda c: c.data and c.data.startswith('CTC_'))
+# @dp.callback_query_handler(lambda command: command == 'CREATE')
+# async def ctc_add(callback: types.CallbackQuery):
+#     print('asd')
+#     user_id = callback.from_user.id
+#     await sqlite_db.create_wallet(user_id)
+#     wallet_address = await view_inf()
+#     await bot.edit_message_text(text=f'A wallet was created for the user ({user_id}) and the address of this wallet {wallet_address} .\n 🥳Congrats!🥳',)
+
+
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CTC_'))
 async def ctc_add(callback: types.CallbackQuery):
     ctc_answer = str(callback.data.split('_')[1])
     if ctc_answer == 'add':
@@ -221,7 +227,7 @@ async def ctc_add(callback: types.CallbackQuery):
         pass
 
 
-@dp.callback_query_handler(lambda c: c.data and c.data.startswith('CP_'))
+@dp.callback_query_handler(lambda command: command.data and command.data.startswith('CP_'))
 async def ctc_add(callback: types.CallbackQuery):
     cp_answer = str(callback.data.split('_')[1]).upper()
 
