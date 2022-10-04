@@ -11,13 +11,28 @@ def sql_start():
     cur = base.cursor()
     if base:
         print('Data base connected OK!')
+    else:
+        print('Data base was created!')
+
     base.execute('''
-                    CREATE TABLE IF NOT EXISTS wallet(
-                    user_id INTEGER PRIMERY KEY,
-                    wallet_id TEXT
+                    CREATE TABLE IF NOT EXISTS coins (
+                        user_id TEXT,
+                        coin TEXT,
+                        value REAL
                     )
                 ''')
-    print('Data base was created!')
+    print('The coins table was successfully created')
+    base.execute('''
+                    CREATE TABLE IF NOT EXISTS wallet (
+                                                        user_id TEXT PRIMARY KEY,
+                                                        wallet_id TEXT,
+                                                       balance FLOAT,
+                                                        wallet_currency TEXT,
+                                                        coins TEXT,
+                                                        FOREIGN KEY (user_id) REFERENCES coins(user_id)
+                    )
+                ''')
+    print('The wallet table was successfully created')
     base.commit()
 
 
@@ -30,17 +45,19 @@ async def check_user(user_id):
         raise NoneUserWallet
 
 
-async def create_wallet(user_id):
+async def create_wallet(user_id, wallet_currency):
 
     wallet_address = str(user_id) + '_wallet'
-    cur.execute("INSERT INTO wallet VALUES (?, ?)", (user_id, wallet_address))
+    cur.execute('''INSERT INTO wallet VALUES (
+                                            user_id,
+                                            wallet_id,
+                                            balance,
+                                            wallet_currency)''', (
+                                                                user_id,
+                                                                wallet_address,
+                                                                0,
+                                                                wallet_currency)
+                )
+
     base.commit()
-
     return wallet_address
-
-
-# async def view_inf():
-#     output_check_inf = str(cur.execute(f'SELECT wallet_id FROM wallet WHERE wallet_id = 1').fetchone()[0])
-#     print(output_check_inf)
-#
-

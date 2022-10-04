@@ -4,3 +4,4 @@ wallet_db
 wallet_db-journal
 __pycache__
 global_db
+.idea
