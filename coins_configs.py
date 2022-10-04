@@ -89,3 +89,4 @@ LIST_OF_COINS = {
         'id': 'litecoin'
     },
 }
+
