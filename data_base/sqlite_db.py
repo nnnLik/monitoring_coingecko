@@ -100,15 +100,20 @@ async def create_wallet(user_id, wallet_currency):
     return wallet_address
 
 
+async def column_output():
+    cur.execute('SELECT coin_id, coin_name FROM list_of_coin')
+    output = cur.fetchall()
+    return output
+
+
 async def set_user_wallet(user_id, coin_id, value_of_coins):
     cur.execute('''INSERT INTO wallet VALUES (
-                                            user_id,
-                                            wallet_id,
-                                            balance,
-                                            wallet_currency)''', (
-        user_id,
-        coin_id,
-        value_of_coins)
+                                                user_id,
+                                                coin_id,
+                                                value_of_coins,
+                                                )''',
+                (
+                    user_id, coin_id, value_of_coins)
                 )
 
     base.commit()
