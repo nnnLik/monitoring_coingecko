@@ -3,6 +3,7 @@ import requests
 from aiogram import (types,
                      Dispatcher, )
 
+import data_base.sqlite_db
 from keyboards.inline_change_coins import inline_keyboard_CTC
 from keyboards.inline_check_price import inline_keyboard_CP
 
@@ -86,8 +87,10 @@ async def list_of_coins(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*buttons)
 
-    for coins in LIST_OF_COINS:
-        await message.answer(f'Coin Name: *{LIST_OF_COINS[coins]["name"]}*\nCoin ID: _{LIST_OF_COINS[coins]["id"]}_',
+    coins_name_id = await data_base.sqlite_db.column_output()
+
+    for coins_inf in coins_name_id:
+        await message.answer(f'Coin Name: *{coins_inf[1]}*\nCoin ID: _{coins_inf[0]}_',
                              parse_mode="Markdown")
 
 
