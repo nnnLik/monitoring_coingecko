@@ -15,49 +15,31 @@ def sql_start():
         print('Data base was created!')
 
     base.execute('''
-                    CREATE TABLE IF NOT EXISTS coins (
-                        user_id TEXT,
-                        coin TEXT,
-                        value REAL
-                    )
+                    CREATE TABLE IF NOT EXISTS user (
+                        user_id TEXT PRIMARY KEY UNIQUE NOT NULL,
+                        wallet_id TEXT NOT NULL,
+                        balance REAL DEFAULT 0.0)
                 ''')
-    print('The coins table was successfully created')
+    print('''----------------------------------------\n
+    The user table was successfully created\n''')
+    base.execute('''
+                    CREATE TABLE IF NOT EXISTS list_of_coin (
+                        coin_id TEXT PRIMARY KEY UNIQUE NOT NULL,
+                        coin_name TEXT,
+                        get_method TEXT)
+                ''')
+    print('''----------------------------------------\n
+    The list_of_coin table was successfully created\n
+    ----------------------------------------''')
     base.execute('''
                     CREATE TABLE IF NOT EXISTS wallet (
-                                                        user_id TEXT PRIMARY KEY,
-                                                        wallet_id TEXT,
-                                                       balance FLOAT,
-                                                        wallet_currency TEXT,
-                                                        coins TEXT,
-                                                        FOREIGN KEY (user_id) REFERENCES coins(user_id)
-                    )
+                        user_id TEXT,
+                        coin_id TEXT,
+                        value_of_coins REAL DEFAULT 0.0, 
+                        FOREIGN KEY (user_id) REFERENCES user(user_id)
                 ''')
-    print('The wallet table was successfully created')
-    base.commit()
-
-
-async def check_user(user_id):
-    info = cur.execute('SELECT user_id FROM wallet WHERE user_id=?', (user_id,))
-
-    if info.fetchone() is None:
-        pass
-    else:
-        raise NoneUserWallet
-
-
-async def create_wallet(user_id, wallet_currency):
-
-    wallet_address = str(user_id) + '_wallet'
-    cur.execute('''INSERT INTO wallet VALUES (
-                                            user_id,
-                                            wallet_id,
-                                            balance,
-                                            wallet_currency)''', (
-                                                                user_id,
-                                                                wallet_address,
-                                                                0,
-                                                                wallet_currency)
-                )
+    print('''----------------------------------------\n
+    The coins wallet was successfully created\n
+    ----------------------------------------''')
 
     base.commit()
-    return wallet_address
