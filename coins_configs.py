@@ -18,7 +18,7 @@ LIST_OF_COINS = {
     },
     3: {
         'name': 'TUSD - TrueUSD',
-        'id': 'bitcoin'
+        'id': 'true-usd'
     },
     4: {
         'name': 'USDT - Tether',
