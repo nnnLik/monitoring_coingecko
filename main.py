@@ -4,8 +4,10 @@ import logging
 
 from data_base import sqlite_db
 
-from imports import (dp,
-                     bot, )
+from imports import (
+    dp,
+    bot,
+)
 
 from handlers import start
 from handlers.wallet_handlers import wallet

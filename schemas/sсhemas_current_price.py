@@ -13,4 +13,3 @@ class MarketData(BaseModel):
 
 class MarketDataModel(BaseModel):
     market_data: MarketData
-
